@@ -1,0 +1,861 @@
+openapi: 3.0.0
+info:
+  title: Blog API
+  version: 2.0.0
+  description: ブログ、ユーザー、コメント、いいね機能を提供するAPI
+
+servers:
+  - url: http://localhost:8080
+    description: ローカル開発環境
+
+paths:
+
+  # ------------------------
+  # User API
+  # ------------------------
+  /users:
+    post:
+      summary: ユーザー登録
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreateRequest"
+      responses:
+        "201":
+          description: ユーザー作成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: リクエストが不正
+        "409":
+          description: ユーザーが既に存在
+
+  /users/{userId}:
+    get:
+      summary: ユーザー情報取得
+      tags:
+        - User
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ユーザーID
+      responses:
+        "200":
+          description: ユーザー情報取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: ユーザーが見つかりません
+
+    put:
+      summary: ユーザー編集
+      tags:
+        - User
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ユーザーID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+      responses:
+        "200":
+          description: ユーザー更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: リクエストが不正
+        "404":
+          description: ユーザーが見つかりません
+
+    delete:
+      summary: ユーザー削除
+      tags:
+        - User
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ユーザーID
+      responses:
+        "204":
+          description: ユーザー削除成功
+        "404":
+          description: ユーザーが見つかりません
+
+  /auth/login:
+    post:
+      summary: ユーザーログイン
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: 認証失敗
+
+  # ------------------------
+  # Blog API
+  # ------------------------
+  /blogs:
+    get:
+      summary: ブログ全件取得
+      tags:
+        - Blog
+      responses:
+        "200":
+          description: ブログ一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Blog"
+
+    post:
+      summary: ブログ投稿
+      tags:
+        - Blog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogCreateRequest"
+      responses:
+        "201":
+          description: ブログ作成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Blog"
+        "400":
+          description: リクエストが不正
+
+  /blogs/{blogId}:
+    get:
+      summary: ブログ詳細取得
+      tags:
+        - Blog
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ブログID
+      responses:
+        "200":
+          description: ブログ取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Blog"
+        "404":
+          description: ブログが見つかりません
+
+    put:
+      summary: ブログ編集
+      tags:
+        - Blog
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ブログID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogUpdateRequest"
+      responses:
+        "200":
+          description: ブログ更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Blog"
+        "400":
+          description: リクエストが不正
+        "404":
+          description: ブログが見つかりません
+
+    delete:
+      summary: ブログ削除
+      tags:
+        - Blog
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ブログID
+      responses:
+        "204":
+          description: ブログ削除成功
+        "404":
+          description: ブログが見つかりません
+
+  /users/{userId}/blogs:
+    get:
+      summary: ユーザー別ブログ取得
+      tags:
+        - Blog
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ユーザーID
+      responses:
+        "200":
+          description: ブログ一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Blog"
+        "404":
+          description: ユーザーが見つかりません
+
+  # ------------------------
+  # Comment API
+  # ------------------------
+  /blogs/{blogId}/comments:
+    get:
+      summary: ブログのコメント一覧
+      tags:
+        - Comment
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ブログID
+      responses:
+        "200":
+          description: コメント一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comment"
+        "404":
+          description: ブログが見つかりません
+
+    post:
+      summary: コメント投稿
+      tags:
+        - Comment
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ブログID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentCreateRequest"
+      responses:
+        "201":
+          description: コメント作成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "400":
+          description: リクエストが不正
+        "404":
+          description: ブログが見つかりません
+
+  /comments/{commentId}:
+    get:
+      summary: コメント詳細取得
+      tags:
+        - Comment
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: コメントID
+      responses:
+        "200":
+          description: コメント取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "404":
+          description: コメントが見つかりません
+
+    delete:
+      summary: コメント削除
+      tags:
+        - Comment
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: コメントID
+      responses:
+        "204":
+          description: コメント削除成功
+        "404":
+          description: コメントが見つかりません
+
+  # ------------------------
+  # Blog Like API
+  # ------------------------
+  /blogs/{blogId}/likes:
+    get:
+      summary: ブログのいいね一覧取得
+      tags:
+        - Like
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ブログID
+      responses:
+        "200":
+          description: いいね一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BlogLike"
+        "404":
+          description: ブログが見つかりません
+
+    post:
+      summary: ブログにいいね登録
+      tags:
+        - Like
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ブログID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogLikeCreateRequest"
+      responses:
+        "201":
+          description: いいね登録成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogLike"
+        "400":
+          description: リクエストが不正
+        "404":
+          description: ブログが見つかりません
+        "409":
+          description: 既にいいね済み
+
+  /blogs/{blogId}/likes/{likeId}:
+    delete:
+      summary: ブログのいいね解除
+      tags:
+        - Like
+      parameters:
+        - name: blogId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ブログID
+        - name: likeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: いいねID
+      responses:
+        "204":
+          description: いいね解除成功
+        "404":
+          description: いいねが見つかりません
+
+  # ------------------------
+  # Comment Like API
+  # ------------------------
+  /comments/{commentId}/likes:
+    get:
+      summary: コメントのいいね一覧取得
+      tags:
+        - Like
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: コメントID
+      responses:
+        "200":
+          description: いいね一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommentLike"
+        "404":
+          description: コメントが見つかりません
+
+    post:
+      summary: コメントにいいね登録
+      tags:
+        - Like
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: コメントID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentLikeCreateRequest"
+      responses:
+        "201":
+          description: いいね登録成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommentLike"
+        "400":
+          description: リクエストが不正
+        "404":
+          description: コメントが見つかりません
+        "409":
+          description: 既にいいね済み
+
+  /comments/{commentId}/likes/{likeId}:
+    delete:
+      summary: コメントのいいね解除
+      tags:
+        - Like
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: コメントID
+        - name: likeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: いいねID
+      responses:
+        "204":
+          description: いいね解除成功
+        "404":
+          description: いいねが見つかりません
+
+# ------------------------
+# Components (DTO)
+# ------------------------
+components:
+  schemas:
+
+    # ---- User DTO ----
+    User:
+      type: object
+      required:
+        - id
+        - name
+        - nickname
+      properties:
+        id:
+          type: string
+          description: ユーザーID
+          example: "user123"
+        name:
+          type: string
+          description: ユーザー名（ログイン用）
+          minLength: 3
+          maxLength: 50
+          example: "john_doe"
+        nickname:
+          type: string
+          description: ニックネーム（表示名）
+          minLength: 1
+          maxLength: 50
+          example: "ジョン"
+        iconUrl:
+          type: string
+          format: uri
+          description: アイコン画像URL
+          example: "https://example.com/icons/user123.png"
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+          example: "2025-11-24T13:45:15Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+          example: "2025-11-24T13:45:15Z"
+
+    UserCreateRequest:
+      type: object
+      required:
+        - name
+        - password
+        - nickname
+      properties:
+        name:
+          type: string
+          description: ユーザー名（ログイン用）
+          minLength: 3
+          maxLength: 50
+          example: "john_doe"
+        password:
+          type: string
+          format: password
+          description: パスワード
+          minLength: 8
+          maxLength: 100
+          example: "SecurePass123!"
+        nickname:
+          type: string
+          description: ニックネーム（表示名）
+          minLength: 1
+          maxLength: 50
+          example: "ジョン"
+        iconUrl:
+          type: string
+          format: uri
+          description: アイコン画像URL
+          example: "https://example.com/icons/user123.png"
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: ユーザー名（ログイン用）
+          minLength: 3
+          maxLength: 50
+          example: "john_doe_updated"
+        password:
+          type: string
+          format: password
+          description: パスワード
+          minLength: 8
+          maxLength: 100
+          example: "NewSecurePass123!"
+        nickname:
+          type: string
+          description: ニックネーム（表示名）
+          minLength: 1
+          maxLength: 50
+          example: "ジョン・アップデート"
+        iconUrl:
+          type: string
+          format: uri
+          description: アイコン画像URL
+          example: "https://example.com/icons/user123_new.png"
+
+    LoginRequest:
+      type: object
+      required:
+        - name
+        - password
+      properties:
+        name:
+          type: string
+          description: ユーザー名
+          example: "john_doe"
+        password:
+          type: string
+          format: password
+          description: パスワード
+          example: "SecurePass123!"
+
+    LoginResponse:
+      type: object
+      required:
+        - token
+        - userId
+      properties:
+        token:
+          type: string
+          description: 認証トークン（JWT等）
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        userId:
+          type: string
+          description: ユーザーID
+          example: "user123"
+        expiresAt:
+          type: string
+          format: date-time
+          description: トークン有効期限
+          example: "2025-11-25T13:45:15Z"
+
+    # ---- Blog DTO ----
+    Blog:
+      type: object
+      required:
+        - id
+        - userId
+        - content
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: ブログID
+          example: "blog123"
+        userId:
+          type: string
+          description: 投稿者のユーザーID
+          example: "user123"
+        content:
+          type: string
+          description: ブログ本文
+          minLength: 1
+          maxLength: 5000
+          example: "今日は良い天気です。"
+        likeCount:
+          type: integer
+          description: いいね数
+          minimum: 0
+          example: 42
+        commentCount:
+          type: integer
+          description: コメント数
+          minimum: 0
+          example: 5
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+          example: "2025-11-24T13:45:15Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+          example: "2025-11-24T13:45:15Z"
+
+    BlogCreateRequest:
+      type: object
+      required:
+        - userId
+        - content
+      properties:
+        userId:
+          type: string
+          description: 投稿者のユーザーID
+          example: "user123"
+        content:
+          type: string
+          description: ブログ本文
+          minLength: 1
+          maxLength: 5000
+          example: "今日は良い天気です。"
+
+    BlogUpdateRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          description: ブログ本文
+          minLength: 1
+          maxLength: 5000
+          example: "今日は素晴らしい天気です。"
+
+    # ---- Comment DTO ----
+    Comment:
+      type: object
+      required:
+        - id
+        - blogId
+        - userId
+        - content
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: コメントID
+          example: "comment123"
+        blogId:
+          type: string
+          description: 対象ブログID
+          example: "blog123"
+        userId:
+          type: string
+          description: コメント投稿者のユーザーID
+          example: "user456"
+        content:
+          type: string
+          description: コメント本文
+          minLength: 1
+          maxLength: 1000
+          example: "素敵なブログですね！"
+        likeCount:
+          type: integer
+          description: いいね数
+          minimum: 0
+          example: 10
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+          example: "2025-11-24T13:45:15Z"
+
+    CommentCreateRequest:
+      type: object
+      required:
+        - userId
+        - content
+      properties:
+        userId:
+          type: string
+          description: コメント投稿者のユーザーID
+          example: "user456"
+        content:
+          type: string
+          description: コメント本文
+          minLength: 1
+          maxLength: 1000
+          example: "素敵なブログですね！"
+
+    # ---- Blog Like DTO ----
+    BlogLike:
+      type: object
+      required:
+        - id
+        - blogId
+        - userId
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: いいねID
+          example: "bloglike123"
+        blogId:
+          type: string
+          description: ブログID
+          example: "blog123"
+        userId:
+          type: string
+          description: いいねしたユーザーID
+          example: "user789"
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+          example: "2025-11-24T13:45:15Z"
+
+    BlogLikeCreateRequest:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          description: いいねするユーザーID
+          example: "user789"
+
+    # ---- Comment Like DTO ----
+    CommentLike:
+      type: object
+      required:
+        - id
+        - commentId
+        - userId
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: いいねID
+          example: "commentlike123"
+        commentId:
+          type: string
+          description: コメントID
+          example: "comment123"
+        userId:
+          type: string
+          description: いいねしたユーザーID
+          example: "user789"
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+          example: "2025-11-24T13:45:15Z"
+
+    CommentLikeCreateRequest:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          description: いいねするユーザーID
+          example: "user789"
