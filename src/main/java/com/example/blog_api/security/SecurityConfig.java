@@ -26,25 +26,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                // セキュリティヘッダーの設定
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.deny())
                         .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // 認証不要: ログインとユーザー登録
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/users").permitAll()
                         
-                        // 認証不要: ブログとコメントの閲覧
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/blogs/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/comments/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/users/{userId}/blogs").permitAll()
                         
-                        // 認証不要: Swagger
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/openapi/**").permitAll()
                         
-                        // その他は全て認証必要（投稿、編集、削除、いいねなど）
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -57,7 +52,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // BCryptのストレングスを12に設定（デフォルトは10）
         return new BCryptPasswordEncoder(12);
     }
 

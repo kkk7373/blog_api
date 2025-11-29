@@ -41,7 +41,6 @@ public class CommentService {
      * コメントを作成
      */
     public Comment createComment(String blogId, String userId, String content) {
-        // ブログの存在確認
         if (!blogRepository.existsById(blogId)) {
             throw new ResourceNotFoundException("Blog not found");
         }

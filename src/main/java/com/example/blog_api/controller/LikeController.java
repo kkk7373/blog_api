@@ -25,7 +25,6 @@ public class LikeController {
         this.blogLikeService = blogLikeService;
         this.commentLikeService = commentLikeService;
     }
-    // ========== Blog Like ==========
     
     @GetMapping("/blogs/{blogId}/likes")
     public ResponseEntity<List<BlogLike>> getBlogLikes(@PathVariable String blogId) {
@@ -48,7 +47,6 @@ public class LikeController {
             BlogLike createdLike = blogLikeService.createBlogLike(blogId, userId);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdLike);
         } catch (IllegalStateException e) {
-            // 既にいいね済み
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
@@ -67,7 +65,6 @@ public class LikeController {
         return ResponseEntity.noContent().build();
     }
 
-    // ========== Comment Like ==========
     
     @GetMapping("/comments/{commentId}/likes")
     public ResponseEntity<List<CommentLike>> getCommentLikes(@PathVariable String commentId) {
@@ -89,7 +86,6 @@ public class LikeController {
             CommentLike createdLike = commentLikeService.createCommentLike(commentId, userId);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdLike);
         } catch (IllegalStateException e) {
-            // 既にいいね済み
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }

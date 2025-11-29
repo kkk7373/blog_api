@@ -33,7 +33,6 @@ public class CommentController {
             @PathVariable String blogId,
             @RequestHeader("Authorization") String authHeader,
             @Valid @RequestBody CommentCreateRequest request) {
-        // トークンからuserIdを取得
         String userId = authHelper.getCurrentUserId(authHeader);
         
         Comment comment = commentService.createComment(blogId, userId, request.getContent());
@@ -50,7 +49,6 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(
             @PathVariable String commentId,
             @RequestHeader("Authorization") String authHeader) {
-        // 自分のコメントかチェック
         Comment comment = commentService.getCommentById(commentId);
         if(!authHelper.getCurrentUserId(authHeader).equals(comment.getUserId())){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

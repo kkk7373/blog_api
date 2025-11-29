@@ -24,7 +24,6 @@ public class PasswordValidationService {
             throw new BadRequestException("パスワードは必須です");
         }
 
-        // 長さチェック
         if (password.length() < MIN_LENGTH) {
             errors.add("パスワードは" + MIN_LENGTH + "文字以上である必要があります");
         }
@@ -32,22 +31,18 @@ public class PasswordValidationService {
             errors.add("パスワードは" + MAX_LENGTH + "文字以下である必要があります");
         }
 
-        // 小文字を含むか
         if (!password.matches(".*[a-z].*")) {
             errors.add("パスワードには小文字を1文字以上含める必要があります");
         }
 
-        // 大文字を含むか
         if (!password.matches(".*[A-Z].*")) {
             errors.add("パスワードには大文字を1文字以上含める必要があります");
         }
 
-        // 数字を含むか
         if (!password.matches(".*\\d.*")) {
             errors.add("パスワードには数字を1文字以上含める必要があります");
         }
 
-        // よくあるパスワードのチェック
         if (isCommonPassword(password)) {
             errors.add("このパスワードは一般的すぎるため使用できません");
         }

@@ -6,7 +6,6 @@ package com.example.blog_api.dto;
  * 将来的な拡張のためクラスは保持
  */
 public class BlogLikeCreateRequest {
-    // 現在はフィールドなし（認証情報からuserIdを取得）
     
     public BlogLikeCreateRequest() {
     }

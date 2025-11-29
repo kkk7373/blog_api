@@ -23,7 +23,6 @@ public class BlogLikeService {
     }
     
     public BlogLike createBlogLike(String blogId, String userId) {
-        // 既にいいね済みかチェック
         if (blogLikeRepository.findByBlogIdAndUserId(blogId, userId).isPresent()) {
             throw new DuplicateResourceException("既にこのブログにいいね済みです");
         }

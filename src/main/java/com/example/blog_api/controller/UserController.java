@@ -49,7 +49,6 @@ public class UserController {
             @RequestHeader("Authorization") String authHeader,
             @RequestParam(value = "nickname", required = false) String nickname,
             @RequestParam(value = "iconFile", required = false) MultipartFile iconFile) {
-        // 自分のアカウントかチェック
         if(!authHelper.getCurrentUserId(authHeader).equals(userId)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -65,7 +64,6 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(
             @PathVariable String userId,
             @RequestHeader("Authorization") String authHeader) {
-        // 自分のアカウントかチェック
         if(!authHelper.getCurrentUserId(authHeader).equals(userId)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

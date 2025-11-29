@@ -23,16 +23,13 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        // ユーザー名でユーザーを検索
         User user = userRepository.findByName(request.getName())
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
 
-        // パスワード検証
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new InvalidCredentialsException("Invalid username or password");
         }
 
-        // JWTトークンを生成（ユーザー名とユーザーIDを含む）
         String token = jwtUtil.generateToken(user.getName(), user.getId());
 
         LoginResponse response = new LoginResponse();

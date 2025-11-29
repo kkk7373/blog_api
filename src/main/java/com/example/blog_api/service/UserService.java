@@ -34,21 +34,17 @@ public class UserService {
     }
 
     public User createUser(UserCreateRequest request, MultipartFile iconFile) {
-        // ユーザー名の重複チェック
         if (userRepository.findByName(request.getName()).isPresent()) {
             throw new DuplicateResourceException("User already exists");
         }
 
-        // パスワードの強度チェック
         passwordValidationService.validatePassword(request.getPassword());
 
         User user = new User();
         user.setName(request.getName());
         user.setNickname(request.getNickname());
-        // パスワードをハッシュ化して保存
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         
-        // アイコンファイルがある場合はCloudinaryにアップロード
         if (iconFile != null && !iconFile.isEmpty()) {
             try {
                 String iconUrl = imageUploadService.uploadImage(iconFile, "user-icons");
@@ -75,26 +71,21 @@ public class UserService {
     public User updateUser(String userId, UserUpdateRequest request, MultipartFile iconFile) {
         User user = getUserById(userId);
         
-        // 古いアイコンのURLを保存
         String oldIconUrl = user.getIconUrl();
 
         if (request.getNickname() != null) {
             user.setNickname(request.getNickname());
         }
         
-        // アイコンファイルがある場合
         if (iconFile != null && !iconFile.isEmpty()) {
             try {
-                // 新しい画像をアップロード
                 String newIconUrl = imageUploadService.uploadImage(iconFile, "user-icons");
                 user.setIconUrl(newIconUrl);
                 
-                // 古い画像を削除
                 if (oldIconUrl != null && !oldIconUrl.isEmpty()) {
                     try {
                         imageUploadService.deleteImage(oldIconUrl);
                     } catch (Exception e) {
-                        // 削除失敗してもエラーにしない
                         System.err.println("Failed to delete old icon: " + e.getMessage());
                     }
                 }
@@ -113,12 +104,10 @@ public class UserService {
     public void deleteUser(String userId) {
         User user = getUserById(userId);
         
-        // ユーザー削除時にアイコン画像も削除
         if (user.getIconUrl() != null && !user.getIconUrl().isEmpty()) {
             try {
                 imageUploadService.deleteImage(user.getIconUrl());
             } catch (Exception e) {
-                // 削除失敗してもエラーにしない
                 System.err.println("Failed to delete user icon: " + e.getMessage());
             }
         }

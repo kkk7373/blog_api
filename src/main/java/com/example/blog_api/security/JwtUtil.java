@@ -26,17 +26,14 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    // トークンからユーザー名を取得
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // トークンからユーザーIDを取得
     public String extractUserId(String token) {
         return extractClaim(token, claims -> claims.get("userId", String.class));
     }
 
-    // トークンから有効期限を取得
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
@@ -54,12 +51,10 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    // トークンが期限切れかチェック
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    // トークン生成
     public String generateToken(String username, String userId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);  // ユーザーIDを追加
@@ -76,7 +71,6 @@ public class JwtUtil {
                 .compact();
     }
 
-    // トークン検証
     public Boolean validateToken(String token, String username) {
         final String extractedUsername = extractUsername(token);
         return (extractedUsername.equals(username) && !isTokenExpired(token));

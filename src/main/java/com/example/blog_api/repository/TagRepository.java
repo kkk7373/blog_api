@@ -11,6 +11,5 @@ import java.util.Optional;
 public interface TagRepository extends JpaRepository<Tag, String> {
     Optional<Tag> findByName(String name);
     
-    // 部分一致検索
     List<Tag> findByNameContaining(String name);
 }

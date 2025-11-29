@@ -35,10 +35,8 @@ public class BlogController {
     public ResponseEntity<Blog> createBlog(
             @RequestHeader("Authorization") String authHeader,
             @Valid @RequestBody BlogCreateRequest request) {
-        // トークンからuserIdを取得
         String userId = authHelper.getCurrentUserId(authHeader);
         
-        // ブログを作成（タグも自動生成される）
         Blog blog = blogService.createBlog(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(blog);
     }
@@ -66,7 +64,6 @@ public class BlogController {
             @PathVariable String blogId,
             @RequestHeader("Authorization") String authHeader,
             @RequestBody BlogUpdateRequest request) {
-        // 自分のブログかチェック
         if(!authHelper.getCurrentUserId(authHeader).equals(blogService.getBlogById(blogId).getUserId())){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

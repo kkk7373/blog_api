@@ -23,7 +23,6 @@ public class CommentLikeService {
     }
     
     public CommentLike createCommentLike(String commentId, String userId) {
-        // 既にいいね済みかチェック
         if (commentLikeRepository.findByCommentIdAndUserId(commentId, userId).isPresent()) {
             throw new DuplicateResourceException("既にこのコメントにいいね済みです");
         }

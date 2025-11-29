@@ -38,13 +38,10 @@ public class BlogService {
         blog.setCreatedAt(LocalDateTime.now());
         blog.setUpdatedAt(LocalDateTime.now());
 
-        // ブログを保存
         Blog savedBlog = blogRepository.save(blog);
 
-        // Gemini APIでタグを自動生成
         List<String> generatedTags = tagGenerationService.generateTags(request.getContent());
 
-        // タグをブログに紐付け
         tagService.associateTagsWithBlog(savedBlog.getId(), generatedTags);
 
         return savedBlog;
@@ -64,7 +61,6 @@ public class BlogService {
 
         Blog updatedBlog = blogRepository.save(blog);
 
-        // 内容が更新された場合、タグを再生成
         if (request.getContent() != null) {
             List<String> generatedTags = tagGenerationService.generateTags(updatedBlog.getContent());
             tagService.associateTagsWithBlog(updatedBlog.getId(), generatedTags);

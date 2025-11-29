@@ -38,11 +38,9 @@ public class TagService {
      * ブログにタグを紐付ける
      */
     public void associateTagsWithBlog(String blogId, List<String> tagNames) {
-        // 既存のタグ関連付けを削除
         List<BlogTag> existingBlogTags = blogTagRepository.findByBlogId(blogId);
         blogTagRepository.deleteAll(existingBlogTags);
 
-        // 新しいタグを紐付け
         for (String tagName : tagNames) {
             Tag tag = getOrCreateTag(tagName);
             BlogTag blogTag = new BlogTag(blogId, tag.getId());
@@ -69,7 +67,6 @@ public class TagService {
         List<String> tagIds = new ArrayList<>();
         
         for (String tagName : tagNames) {
-            // 部分一致で検索
             List<Tag> matchedTags = tagRepository.findByNameContaining(tagName);
             for (Tag tag : matchedTags) {
                 if (!tagIds.contains(tag.getId())) {
