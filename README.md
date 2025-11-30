@@ -147,22 +147,186 @@ GET /blogs/search?tags=Spring
 
 ## データベーススキーマ
 
-### テーブル一覧
+### ER 図
 
-- `users` - ユーザー情報
-- `blogs` - ブログ記事
-- `comments` - コメント
-- `blog_likes` - ブログへのいいね
-- `comment_likes` - コメントへのいいね
-- `tags` - タグマスター
-- `blog_tags` - ブログとタグの中間テーブル
+```
+users (1) ----< (N) blogs (1) ----< (N) comments
+  |                   |                   |
+  |                   |                   |
+  (1)                (1)                 (1)
+  |                   |                   |
+  v                   v                   v
+ (N)                 (N)                 (N)
+blog_likes      blog_tags           comment_likes
+comment_likes       |
+                    v
+                   (N)
+                  tags
+```
 
-### 主要な制約
+### テーブル詳細
 
-- `users`: name の一意制約
-- `blog_likes`: (blog_id, user_id) の一意制約
-- `comment_likes`: (comment_id, user_id) の一意制約
-- `tags`: name の一意制約
+#### 1. users（ユーザー）
+
+| カラム名   | データ型     | 制約                      | 説明                     |
+| ---------- | ------------ | ------------------------- | ------------------------ |
+| id         | VARCHAR(255) | PK, UUID                  | ユーザー ID              |
+| name       | VARCHAR(255) | UNIQUE, NOT NULL          | ユーザー名（ログイン用） |
+| nickname   | VARCHAR(50)  | NOT NULL                  | 表示名                   |
+| password   | VARCHAR(255) | NOT NULL                  | ハッシュ化パスワード     |
+| icon_url   | VARCHAR(255) | NULL                      | アイコン画像 URL         |
+| created_at | TIMESTAMP    | NOT NULL, DEFAULT CURRENT | 作成日時                 |
+| updated_at | TIMESTAMP    | NOT NULL, DEFAULT CURRENT | 更新日時                 |
+
+**制約:**
+
+- `name`: UNIQUE（重複登録不可）
+- `password`: BCrypt（strength 12）でハッシュ化
+
+---
+
+#### 2. blogs（ブログ記事）
+
+| カラム名      | データ型      | 制約                      | 説明       |
+| ------------- | ------------- | ------------------------- | ---------- |
+| id            | VARCHAR(255)  | PK, UUID                  | ブログ ID  |
+| user_id       | VARCHAR(255)  | NOT NULL, FK(users.id)    | 投稿者 ID  |
+| content       | VARCHAR(5000) | NOT NULL                  | 本文       |
+| like_count    | INTEGER       | NOT NULL, DEFAULT 0       | いいね数   |
+| comment_count | INTEGER       | NOT NULL, DEFAULT 0       | コメント数 |
+| created_at    | TIMESTAMP     | NOT NULL, DEFAULT CURRENT | 作成日時   |
+| updated_at    | TIMESTAMP     | NOT NULL, DEFAULT CURRENT | 更新日時   |
+
+**外部キー:**
+
+- `user_id` → `users.id`
+
+---
+
+#### 3. comments（コメント）
+
+| カラム名   | データ型      | 制約                      | 説明              |
+| ---------- | ------------- | ------------------------- | ----------------- |
+| id         | VARCHAR(255)  | PK, UUID                  | コメント ID       |
+| blog_id    | VARCHAR(255)  | NOT NULL, FK(blogs.id)    | ブログ ID         |
+| user_id    | VARCHAR(255)  | NOT NULL, FK(users.id)    | コメント投稿者 ID |
+| content    | VARCHAR(1000) | NOT NULL                  | コメント本文      |
+| like_count | INTEGER       | NOT NULL, DEFAULT 0       | いいね数          |
+| created_at | TIMESTAMP     | NOT NULL, DEFAULT CURRENT | 作成日時          |
+
+**外部キー:**
+
+- `blog_id` → `blogs.id`
+- `user_id` → `users.id`
+
+---
+
+#### 4. blog_likes（ブログへのいいね）
+
+| カラム名   | データ型     | 制約                      | 説明                  |
+| ---------- | ------------ | ------------------------- | --------------------- |
+| id         | VARCHAR(255) | PK, UUID                  | いいね ID             |
+| blog_id    | VARCHAR(255) | NOT NULL, FK(blogs.id)    | ブログ ID             |
+| user_id    | VARCHAR(255) | NOT NULL, FK(users.id)    | いいねしたユーザー ID |
+| created_at | TIMESTAMP    | NOT NULL, DEFAULT CURRENT | 作成日時              |
+
+**制約:**
+
+- UNIQUE(`blog_id`, `user_id`)：同じユーザーが同じブログに複数回いいねできない
+
+**外部キー:**
+
+- `blog_id` → `blogs.id`
+- `user_id` → `users.id`
+
+---
+
+#### 5. comment_likes（コメントへのいいね）
+
+| カラム名   | データ型     | 制約                      | 説明                  |
+| ---------- | ------------ | ------------------------- | --------------------- |
+| id         | VARCHAR(255) | PK, UUID                  | いいね ID             |
+| comment_id | VARCHAR(255) | NOT NULL, FK(comments.id) | コメント ID           |
+| user_id    | VARCHAR(255) | NOT NULL, FK(users.id)    | いいねしたユーザー ID |
+| created_at | TIMESTAMP    | NOT NULL, DEFAULT CURRENT | 作成日時              |
+
+**制約:**
+
+- UNIQUE(`comment_id`, `user_id`)：同じユーザーが同じコメントに複数回いいねできない
+
+**外部キー:**
+
+- `comment_id` → `comments.id`
+- `user_id` → `users.id`
+
+---
+
+#### 6. tags（タグマスター）
+
+| カラム名   | データ型     | 制約                      | 説明     |
+| ---------- | ------------ | ------------------------- | -------- |
+| id         | VARCHAR(255) | PK, UUID                  | タグ ID  |
+| name       | VARCHAR(50)  | UNIQUE, NOT NULL          | タグ名   |
+| created_at | TIMESTAMP    | NOT NULL, DEFAULT CURRENT | 作成日時 |
+
+**制約:**
+
+- `name`: UNIQUE（同じタグ名は 1 つのみ）
+
+---
+
+#### 7. blog_tags（ブログとタグの中間テーブル）
+
+| カラム名   | データ型     | 制約                      | 説明        |
+| ---------- | ------------ | ------------------------- | ----------- |
+| id         | VARCHAR(255) | PK, UUID                  | レコード ID |
+| blog_id    | VARCHAR(255) | NOT NULL, FK(blogs.id)    | ブログ ID   |
+| tag_id     | VARCHAR(255) | NOT NULL, FK(tags.id)     | タグ ID     |
+| created_at | TIMESTAMP    | NOT NULL, DEFAULT CURRENT | 作成日時    |
+
+**外部キー:**
+
+- `blog_id` → `blogs.id`
+- `tag_id` → `tags.id`
+
+---
+
+### リレーションシップ
+
+#### ユーザー関連
+
+- `users` 1 : N `blogs`（1 人のユーザーは複数のブログを投稿できる）
+- `users` 1 : N `comments`（1 人のユーザーは複数のコメントを投稿できる）
+- `users` 1 : N `blog_likes`（1 人のユーザーは複数のブログにいいねできる）
+- `users` 1 : N `comment_likes`（1 人のユーザーは複数のコメントにいいねできる）
+
+#### ブログ関連
+
+- `blogs` 1 : N `comments`（1 つのブログに複数のコメントが付く）
+- `blogs` 1 : N `blog_likes`（1 つのブログに複数のいいねが付く）
+- `blogs` N : N `tags`（多対多、`blog_tags`で中間テーブル）
+
+#### コメント関連
+
+- `comments` 1 : N `comment_likes`（1 つのコメントに複数のいいねが付く）
+
+#### タグ関連
+
+- `tags` N : N `blogs`（多対多、`blog_tags`で中間テーブル）
+
+---
+
+### インデックス
+
+パフォーマンス向上のため、以下のカラムにインデックスを推奨：
+
+- `blogs.user_id`（ユーザーのブログ一覧取得）
+- `comments.blog_id`（ブログのコメント一覧取得）
+- `blog_likes.blog_id`（ブログのいいね一覧取得）
+- `blog_likes.user_id`（ユーザーのいいね一覧取得）
+- `blog_tags.blog_id`（ブログのタグ検索）
+- `blog_tags.tag_id`（タグからブログ検索）
+- `tags.name`（タグ名検索）
 
 ## API エンドポイント
 
@@ -365,16 +529,6 @@ curl -X PUT http://localhost:8080/users/{userId} \
 
 ## トラブルシューティング
 
-### ポート 8080 が使用中の場合
-
-```bash
-# プロセスを確認
-lsof -ti:8080
-
-# プロセスを停止
-lsof -ti:8080 | xargs kill -9
-```
-
 ### データベース接続エラー
 
 1. MySQL が起動していることを確認
@@ -386,9 +540,3 @@ lsof -ti:8080 | xargs kill -9
 1. トークンが期限切れでないか確認
 2. `Authorization`ヘッダーの形式が `Bearer {token}` になっているか確認
 3. `application.yml`の JWT 秘密鍵が正しく設定されているか確認
-
-## ドキュメント
-
-- [エラーハンドリング詳細](ERROR_HANDLING_EXAMPLES.md)
-- [セキュリティとバリデーション](SECURITY_VALIDATION_IMPROVEMENTS.md)
-- [OpenAPI 仕様書](src/main/resources/openapi/api.yml)
