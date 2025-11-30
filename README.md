@@ -397,6 +397,3 @@ lsof -ti:8080 | xargs kill -9
 
 このプロジェクトは MIT ライセンスの下で公開されています。
 
-## 作成者
-
-開発: nakamurakanta
