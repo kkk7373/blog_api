@@ -10,4 +10,5 @@ import com.example.blog_api.dto.Comment;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, String>{
     List<Comment> findByBlogId(String blogId);
+    
 }

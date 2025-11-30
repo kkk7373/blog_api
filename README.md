@@ -392,8 +392,3 @@ lsof -ti:8080 | xargs kill -9
 - [エラーハンドリング詳細](ERROR_HANDLING_EXAMPLES.md)
 - [セキュリティとバリデーション](SECURITY_VALIDATION_IMPROVEMENTS.md)
 - [OpenAPI 仕様書](src/main/resources/openapi/api.yml)
-
-## ライセンス
-
-このプロジェクトは MIT ライセンスの下で公開されています。
-
